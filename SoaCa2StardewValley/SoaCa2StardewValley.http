@@ -1,0 +1,6 @@
+@SoaCa2StardewValley_HostAddress = http://localhost:5149
+
+GET {{SoaCa2StardewValley_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
