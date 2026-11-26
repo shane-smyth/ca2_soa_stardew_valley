@@ -3,6 +3,7 @@ using SoaCa2StardewValley.Dtos;
 using SoaCa2StardewValley.Data;
 using SoaCa2StardewValley.Mapping;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SoaCa2StardewValley.Controllers;
 
@@ -42,6 +43,7 @@ public class CropsController : ControllerBase
 
     // POST /api/crops : create. Not idempotent: each call creates a new row. Returns 201.
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<CropDto>> Create(CropWriteDto dto)
     {
         if (await NameExistsAsync(dto.Name))
@@ -61,6 +63,7 @@ public class CropsController : ControllerBase
 
     // PUT /api/crops/5 : replace a crop. Idempotent: repeating the same call gives the same result
     [HttpPut("{id:int}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Update(int id, CropWriteDto dto)
     {
         var crop = await LoadCropAsync(id);
@@ -79,6 +82,7 @@ public class CropsController : ControllerBase
 
     // DELETE /api/crops/5 : blocked with 409 if saved plans use the crop
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(int id)
     {
         var crop = await LoadCropAsync(id);
