@@ -14,13 +14,12 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Season> Seasons => Set<Season>();
     public DbSet<Crop> Crops => Set<Crop>();
     public DbSet<CropSeason> CropSeasons => Set<CropSeason>();
-    public DbSet<Farm> Farms => Set<Farm>();
     public DbSet<Plan> Plans => Set<Plan>();
     public DbSet<PlanEntry> PlanEntries => Set<PlanEntry>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        base.OnModelCreating(modelBuilder);
+        base.OnModelCreating(modelBuilder); // required: configures the Identity tables
 
         modelBuilder.Entity<Season>(e =>
         {
@@ -34,7 +33,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
             e.HasIndex(c => c.Name).IsUnique();
         });
 
-        // Crop <-> Season: many-to-many through CropSeason
+        // Crop <-> Season: many-to-many through CropSeason (composite key)
         modelBuilder.Entity<CropSeason>(e =>
         {
             e.HasKey(cs => new { cs.CropId, cs.SeasonId });
@@ -48,35 +47,25 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
                 .HasForeignKey(cs => cs.SeasonId);
         });
 
-        // User 1 -> * Farms
-        modelBuilder.Entity<Farm>(e =>
-        {
-            e.Property(f => f.Name).HasMaxLength(80).IsRequired();
-
-            e.HasOne(f => f.Owner)
-                .WithMany(u => u.Farms)
-                .HasForeignKey(f => f.OwnerId)
-                .OnDelete(DeleteBehavior.Cascade);
-        });
-
-        // Farm 1 -> * Plans
+        // User 1 -> * Plans. Deleting a user removes their plans.
         modelBuilder.Entity<Plan>(e =>
         {
             e.Property(p => p.Name).HasMaxLength(80).IsRequired();
             e.Property(p => p.Strategy).HasConversion<string>().HasMaxLength(30);
 
-            e.HasOne(p => p.Farm)
-                .WithMany(f => f.Plans)
-                .HasForeignKey(p => p.FarmId)
+            e.HasOne(p => p.Owner)
+                .WithMany(u => u.Plans)
+                .HasForeignKey(p => p.OwnerId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Season is reference data: never cascade-delete plans if a season is removed.
             e.HasOne(p => p.StartSeason)
                 .WithMany()
                 .HasForeignKey(p => p.StartSeasonId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
-        // Plan 1 -> * PlanEntries
+        // Plan 1 -> * PlanEntries. Deleting a plan removes its entries.
         modelBuilder.Entity<PlanEntry>(e =>
         {
             e.HasOne(pe => pe.Plan)
@@ -84,12 +73,13 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
                 .HasForeignKey(pe => pe.PlanId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Crop is reference data: block deleting a crop that saved plans still use.
             e.HasOne(pe => pe.Crop)
                 .WithMany()
                 .HasForeignKey(pe => pe.CropId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
-        modelBuilder.Seed();
+        modelBuilder.Seed(); // seasons, crops and crop-season links
     }
 }

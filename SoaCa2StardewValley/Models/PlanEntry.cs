@@ -7,16 +7,11 @@ public class PlanEntry
     public int Quantity { get; set; }
     public int DayPlanted { get; set; }
 
-    /// <summary>Day of the first harvest (DayPlanted + the crop's GrowthDays).</summary>
-    public int FirstHarvestDay { get; set; }
-
-    /// <summary>How many harvests this planting yields before the season ends.</summary>
-    public int HarvestCount { get; set; }
-
-    public int ExpectedCost { get; set; }
-    public int ExpectedRevenue { get; set; }
-
+    // True when this planting was paid for by earlier harvests, not the starting gold.
     public bool IsReinvestment { get; set; }
+
+    // Total revenue minus seed cost for this planting.
+    public int ExpectedProfit { get; set; }
 
     public int PlanId { get; set; }
     public Plan Plan { get; set; } = null!;

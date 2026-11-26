@@ -15,6 +15,7 @@ public class Plan
     public int Id { get; set; }
     public required string Name { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
+    
     public int StartSeasonId { get; set; }
     public Season StartSeason { get; set; } = null!;
 
@@ -22,6 +23,9 @@ public class Plan
     public int StartDay { get; set; }
 
     public int StartingGold { get; set; }
+    
+    public int TileCount { get; set; }
+    
     public PlanStrategy Strategy { get; set; }
 
     /// <summary>
@@ -34,9 +38,9 @@ public class Plan
     // ---- Projected results ----
     public int ProjectedFinalGold { get; set; }
     public int ProjectedProfit { get; set; }
-
-    public int FarmId { get; set; }
-    public Farm Farm { get; set; } = null!;
+    
+    public required string OwnerId { get; set; }
+    public ApplicationUser Owner { get; set; } = null!;
 
     public ICollection<PlanEntry> Entries { get; set; } = new List<PlanEntry>();
 }
